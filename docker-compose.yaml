@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:15.1-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=tasklist
+    volumes:
+      - ./src/main/resources/db-init:/docker-entrypoint-initdb.d
+    ports:
+      - '15432:5432'
