@@ -3,7 +3,7 @@ package com.example.tasklisttwo.web.security;
 import com.example.tasklisttwo.model.exception.AccessDeniedException;
 import com.example.tasklisttwo.model.user.Role;
 import com.example.tasklisttwo.model.user.User;
-import com.example.tasklisttwo.service.UserService;
+import com.example.tasklisttwo.service.impl.UserServiceImpl;
 import com.example.tasklisttwo.service.props.JwtProperties;
 import com.example.tasklisttwo.web.dto.auth.JwtResponse;
 import io.jsonwebtoken.Claims;
@@ -15,10 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -28,12 +29,15 @@ import java.util.stream.Collectors;
 public class JwtTokenProvider {
 
     private final JwtProperties jwtProperties;
-    private final UserDetailsService userDetailsService;
-    private final UserService userService;
+
+    private final JwtUserDetailsService userDetailsService;
+
+    private final UserServiceImpl userService;
+
     private Key key;
 
     @Autowired
-    public JwtTokenProvider(JwtProperties jwtProperties, UserDetailsService userDetailsService, UserService userService) {
+    public JwtTokenProvider(JwtProperties jwtProperties, JwtUserDetailsService userDetailsService, UserServiceImpl userService) {
         this.jwtProperties = jwtProperties;
         this.userDetailsService = userDetailsService;
         this.userService = userService;
@@ -48,12 +52,11 @@ public class JwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("id", userId);
         claims.put("roles", resolveRoles(roles));
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + jwtProperties.getAccess());
-        return Jwts.builder()
+        Instant validity = Instant.now().plus(jwtProperties.getAccess(), ChronoUnit.HOURS);
+        return Jwts
+                .builder()
                 .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(validity)
+                .setExpiration(Date.from(validity))
                 .signWith(key)
                 .compact();
     }
@@ -62,36 +65,38 @@ public class JwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("id", userId);
         Date now = new Date();
-        Date validity = new Date(now.getTime() + jwtProperties.getRefresh());
-        return Jwts.builder()
+        Instant validity = Instant.now().plus(jwtProperties.getRefresh(), ChronoUnit.DAYS);
+        return Jwts
+                .builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(validity)
+                .setExpiration(Date.from(validity))
                 .signWith(key)
                 .compact();
     }
 
-    public JwtResponse refreshTokens(String refreshToken) {
+    public JwtResponse refreshUserTokens(String refreshToken) {
         JwtResponse jwtResponse = new JwtResponse();
         if (!validateToken(refreshToken)) {
             throw new AccessDeniedException();
         }
-        Long userId = Long.valueOf(getId(refreshToken));
-        User user = userService.getById(userId);
-        jwtResponse.setId(userId);
-        jwtResponse.setUsername(user.getUsername());
-        jwtResponse.setAccessToken(createAccessToken(userId, user.getUsername(), user.getRoles()));
-        jwtResponse.setRefreshToken(createRefreshToken(userId, user.getUsername()));
+        Long id = Long.valueOf(getId(refreshToken));
+        User user = userService.getById(id);
+        String username = user.getUsername();
+        jwtResponse.setId(id);
+        jwtResponse.setUsername(username);
+        jwtResponse.setAccessToken(createAccessToken(id, username, user.getRoles()));
+        jwtResponse.setRefreshToken(createRefreshToken(id, username));
         return jwtResponse;
     }
 
     public boolean validateToken(String token) {
-        Jws<Claims> claims = Jwts
+        Jws<Claims> claimsJws = Jwts
                 .parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token);
-        return !claims.getBody().getExpiration().before(new Date());
+        return !claimsJws.getBody().getExpiration().before(new Date());
     }
 
     public Authentication getAuthentication(String token) {
@@ -122,9 +127,8 @@ public class JwtTokenProvider {
     }
 
     private List<String> resolveRoles(Set<Role> roles) {
-        return roles.stream()
-                .map(Enum::name)
-                .collect(Collectors.toList());
+        return roles.stream().map(Enum::name).collect(Collectors.toList());
     }
+
 
 }

@@ -3,16 +3,17 @@ package com.example.tasklisttwo.model.user;
 import com.example.tasklisttwo.model.task.Task;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String username;
@@ -22,7 +23,7 @@ public class User {
     private String passwordConfirmation;
 
     @Column(name = "role")
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "users_roles")
     @Enumerated(value = EnumType.STRING)
     private Set<Role> roles;

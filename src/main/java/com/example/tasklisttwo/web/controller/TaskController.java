@@ -6,6 +6,7 @@ import com.example.tasklisttwo.web.dto.task.TaskDTO;
 import com.example.tasklisttwo.web.mappers.TaskMapper;
 import com.example.tasklisttwo.web.validation.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,17 +25,20 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@customSecurityExpression.canAccessTask(#id)")
     public TaskDTO getById(@PathVariable Long id) {
         Task task = taskService.getById(id);
         return taskMapper.toDTO(task);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@customSecurityExpression.canAccessTask(#id)")
     public void deleteById(@PathVariable Long id) {
         taskService.delete(id);
     }
 
     @PutMapping
+    @PreAuthorize("@customSecurityExpression.canAccessTask(#dto.id)")
     public TaskDTO update(@Validated(OnUpdate.class) @RequestBody TaskDTO dto) {
         Task task = taskMapper.toEntity(dto);
         Task updatedTask = taskService.update(task);

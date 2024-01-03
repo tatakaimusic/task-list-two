@@ -1,6 +1,5 @@
 package com.example.tasklisttwo.service.impl;
 
-import com.example.tasklisttwo.model.exception.AccessDeniedException;
 import com.example.tasklisttwo.model.user.User;
 import com.example.tasklisttwo.service.AuthService;
 import com.example.tasklisttwo.service.UserService;
@@ -59,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public JwtResponse refresh(String refreshToken) {
-        return jwtTokenProvider.refreshTokens(refreshToken);
+        return jwtTokenProvider.refreshUserTokens(refreshToken);
     }
 
 }

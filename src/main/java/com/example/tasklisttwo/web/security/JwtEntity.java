@@ -1,6 +1,5 @@
 package com.example.tasklisttwo.web.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -9,9 +8,13 @@ import java.util.Collection;
 public class JwtEntity implements UserDetails {
 
     private Long id;
+
     private final String username;
+
     private final String name;
+
     private final String password;
+
     private final Collection<? extends GrantedAuthority> authorities;
 
     public JwtEntity(Long id, String username, String name, String password, Collection<? extends GrantedAuthority> authorities) {
@@ -20,6 +23,10 @@ public class JwtEntity implements UserDetails {
         this.name = name;
         this.password = password;
         this.authorities = authorities;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     @Override
@@ -56,5 +63,4 @@ public class JwtEntity implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
 }

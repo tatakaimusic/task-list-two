@@ -4,6 +4,7 @@ package com.example.tasklisttwo.web.dto.user;
 import com.example.tasklisttwo.web.validation.OnCreate;
 import com.example.tasklisttwo.web.validation.OnUpdate;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
@@ -23,6 +24,8 @@ public class UserDTO {
             groups = {OnUpdate.class, OnCreate.class})
     @Length(max = 255, message = "Username must be smaller than 255",
             groups = {OnUpdate.class, OnCreate.class})
+    @Email(message = "Username must have email format!",
+            groups = {OnCreate.class, OnUpdate.class})
     private String username;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

@@ -37,17 +37,11 @@ public class AuthController {
     public UserDTO register(
             @Validated(OnCreate.class) @RequestBody UserDTO dto
     ) {
-        System.out.println("Im here!");
-//        User user = userMapper.toEntity(dto);
-//        User createdUser = userService.create(user);
-//        return userMapper.toDTO(createdUser);
-        return null;
+        User user = userMapper.toEntity(dto);
+        User createdUser = userService.create(user);
+        return userMapper.toDTO(createdUser);
     }
 
-    @GetMapping("/test")
-    public void test(){
-        System.out.println("test");
-    }
 
     @PostMapping("/refresh")
     public JwtResponse refresh(@RequestBody String refreshToken) {

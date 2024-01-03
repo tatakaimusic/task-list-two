@@ -9,14 +9,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
-@Service
+@Component
 public class JwtTokenFilter extends GenericFilterBean {
-
     private final JwtTokenProvider jwtTokenProvider;
 
     @Autowired
@@ -30,6 +29,7 @@ public class JwtTokenFilter extends GenericFilterBean {
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             bearerToken = bearerToken.substring(7);
         }
+
         if (bearerToken != null && jwtTokenProvider.validateToken(bearerToken)) {
             try {
                 Authentication authentication = jwtTokenProvider.getAuthentication(bearerToken);
@@ -37,7 +37,9 @@ public class JwtTokenFilter extends GenericFilterBean {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             } catch (ResourceNotFoundException ignored) {
+
             }
         }
+        filterChain.doFilter(servletRequest, servletResponse);
     }
 }
