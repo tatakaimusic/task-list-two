@@ -26,4 +26,19 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             """, nativeQuery = true)
     void assignTask(@Param("userId") Long userId, @Param("taskId") Long taskId);
 
+    @Modifying
+    @Query(value = """
+                        DELETE FROM tasks_images ti 
+                        WHERE  ti.image = :name 
+                        AND ti.task_id = :id
+            """, nativeQuery = true)
+    void deleteImage(@Param("name") String name, @Param("id") Long id);
+
+    @Modifying
+    @Query(value = """
+                        DELETE FROM tasks_images ti 
+                        WHERE ti.task_id = :id
+            """, nativeQuery = true)
+    void deleteAllImages(@Param("id") Long id);
+
 }

@@ -1,7 +1,9 @@
 package com.example.tasklisttwo.config;
 
+import com.example.tasklisttwo.service.props.MinioProperties;
 import com.example.tasklisttwo.web.security.JwtTokenFilter;
 import com.example.tasklisttwo.web.security.JwtTokenProvider;
+import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -28,13 +30,23 @@ public class ApplicationConfig {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenFilter jwtTokenFilter;
     private final ApplicationContext applicationContext;
+    private final MinioProperties minioProperties;
 
     @Autowired
     @Lazy
-    public ApplicationConfig(JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, ApplicationContext applicationContext) {
+    public ApplicationConfig(JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, ApplicationContext applicationContext, MinioProperties minioProperties) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtTokenFilter = jwtTokenFilter;
         this.applicationContext = applicationContext;
+        this.minioProperties = minioProperties;
+    }
+
+    @Bean
+    public MinioClient minioClient() {
+        return MinioClient.builder()
+                .endpoint(minioProperties.getUrl())
+                .credentials(minioProperties.getAccessKey(), minioProperties.getSecretKey())
+                .build();
     }
 
     @Bean

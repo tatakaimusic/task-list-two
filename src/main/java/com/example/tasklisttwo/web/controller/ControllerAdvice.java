@@ -1,9 +1,7 @@
 package com.example.tasklisttwo.web.controller;
 
-import com.example.tasklisttwo.model.exception.AccessDeniedException;
-import com.example.tasklisttwo.model.exception.ExceptionBody;
-import com.example.tasklisttwo.model.exception.ResourceMappingException;
-import com.example.tasklisttwo.model.exception.ResourceNotFoundException;
+import com.example.tasklisttwo.model.exception.*;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -78,6 +76,30 @@ public class ControllerAdvice {
     public ExceptionBody handleException(Exception e) {
         e.printStackTrace();
         return new ExceptionBody("Internal error!");
+    }
+
+    @ExceptionHandler(ImageUploadException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionBody handleImageUploadException(ImageUploadException e) {
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(ImageDeleteException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionBody handleImageDeleteException(ImageDeleteException e) {
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(ImageDownloadException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionBody handleImageDownloadException(ImageDownloadException e) {
+        return new ExceptionBody(e.getMessage());
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionBody handleExpiredJwtException(ExpiredJwtException e) {
+        return new ExceptionBody(e.getMessage());
     }
 
 }
